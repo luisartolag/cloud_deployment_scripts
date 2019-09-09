@@ -10,7 +10,7 @@ data "http" "myip" {
 }
 
 resource "google_compute_network" "vpc" {
-  name                    = "${local.prefix}vpc-dc"
+  name                    = "${local.prefix}${var.vpc_name}"
   auto_create_subnetworks = "false"
 }
 
@@ -171,21 +171,26 @@ resource "google_compute_firewall" "allow-dns" {
 }
 
 resource "google_compute_subnetwork" "dc-subnet" {
-  name          = "${local.prefix}subnet-dc"
+  name          = "${local.prefix}controller"
   ip_cidr_range = var.dc_subnet_cidr
   network       = google_compute_network.vpc.self_link
 }
 
 resource "google_compute_subnetwork" "cac-subnet" {
-  name          = "${local.prefix}subnet-cac"
+  name          = "${local.prefix}connector"
   ip_cidr_range = var.cac_subnet_cidr
   network       = google_compute_network.vpc.self_link
 }
 
+resource "google_compute_network" "workstations" {
+  name                    = "${local.prefix}workstations"
+  auto_create_subnetworks = "false"
+}
+
 resource "google_compute_subnetwork" "ws-subnet" {
-  name          = "${local.prefix}subnet-ws"
+  name          = "${local.prefix}workstations"
   ip_cidr_range = var.ws_subnet_cidr
-  network       = google_compute_network.vpc.self_link
+  network       = google_compute_network.workstations.self_link
 }
 
 resource "google_compute_address" "dc-internal-ip" {
@@ -198,7 +203,7 @@ resource "google_compute_address" "dc-internal-ip" {
 resource "google_compute_router" "router" {
   name    = "${local.prefix}router"
   region  = var.gcp_region
-  network = google_compute_network.vpc.self_link
+  network = google_compute_network.workstations.self_link
 
   bgp {
     asn = 65000

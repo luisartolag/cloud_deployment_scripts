@@ -42,6 +42,11 @@ variable "allowed_cidr" {
   default     = []
 }
 
+variable "vpc_name" {
+  description = "Name of the VPC containing Teradici components"
+  default     = "vpc-dc"
+}
+
 variable "dc_subnet_cidr" {
   description = "CIDR for subnet containing the Domain Controller"
   default     = "10.0.0.0/24"
@@ -177,6 +182,16 @@ variable "win_gfx_instance_count" {
 variable "win_gfx_machine_type" {
   description = "Machine type for Windows Graphics Workstations"
   default     = "n1-standard-2"
+}
+
+variable "win_gfx_disk_image_project" {
+  description = "Project containing the disk image for Windows Graphics Workstations"
+  default     = "windows-cloud"
+}
+
+variable "win_gfx_disk_image_family" {
+  description = "Disk image family for Windows Graphics Workstations"
+  default     = "windows-2016"
 }
 
 variable "win_gfx_accelerator_type" {
