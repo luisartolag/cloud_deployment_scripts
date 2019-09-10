@@ -10,7 +10,7 @@ data "http" "myip" {
 }
 
 resource "google_compute_network" "vpc" {
-  name                    = "${local.prefix}${var.vpc_name}"
+  name                    = "${local.prefix}${var.teradici_network}"
   auto_create_subnetworks = "false"
 }
 
@@ -39,7 +39,7 @@ resource "google_dns_managed_zone" "private_zone" {
 resource "google_dns_managed_zone" "private_zone_workstations" {
   provider    = "google-beta"
 
-  name        = replace("${local.prefix}${var.domain_name}-zone-workstations", ".", "-")
+  name        = replace("${local.prefix}${var.domain_name}-zone-${var.workstations_network}", ".", "-")
   dns_name    = "${var.domain_name}."
   description = "Private peering zone for ${var.domain_name} workstations"
 
@@ -205,18 +205,18 @@ resource "google_compute_subnetwork" "cac-subnet" {
 }
 
 resource "google_compute_network" "workstations" {
-  name                    = "${local.prefix}workstations"
+  name                    = "${local.prefix}${var.workstations_network}"
   auto_create_subnetworks = "false"
 }
 
 resource "google_compute_subnetwork" "ws-subnet" {
-  name          = "${local.prefix}workstations"
+  name          = "${local.prefix}${var.workstations_network}"
   ip_cidr_range = var.ws_subnet_cidr
   network       = google_compute_network.workstations.self_link
 }
 
 resource "google_compute_firewall" "ws-allow-internal" {
-  name    = "${local.prefix}workstations-allow-internal"
+  name    = "${local.prefix}${var.workstations_network}-allow-internal"
   network = google_compute_network.workstations.self_link
 
   allow {
@@ -235,13 +235,13 @@ resource "google_compute_firewall" "ws-allow-internal" {
 }
 
 resource "google_compute_network_peering" "teradici-workstations" {
-  name = "${local.prefix}${var.vpc_name}-${var.gcp_project_id}-${local.prefix}workstations"
+  name = "${local.prefix}${var.teradici_network}-${var.gcp_project_id}-${local.prefix}${var.workstations_network}"
   network = "${google_compute_network.vpc.self_link}"
   peer_network = "${google_compute_network.workstations.self_link}"
 }
 
 resource "google_compute_network_peering" "workstations-teradici" {
-  name = "${local.prefix}workstations-${var.gcp_project_id}-${local.prefix}${var.vpc_name}"
+  name = "${local.prefix}${var.workstations_network}-${var.gcp_project_id}-${local.prefix}${var.teradici_network}"
   network = "${google_compute_network.workstations.self_link}"
   peer_network = "${google_compute_network.vpc.self_link}"
 }

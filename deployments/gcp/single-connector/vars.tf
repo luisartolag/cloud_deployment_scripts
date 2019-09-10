@@ -42,9 +42,14 @@ variable "allowed_cidr" {
   default     = []
 }
 
-variable "vpc_name" {
+variable "teradici_network" {
   description = "Name of the VPC containing Teradici components"
   default     = "vpc-dc"
+}
+
+variable "workstations_network" {
+  description = "Name of the VPC containing workstations"
+  default     = "vpc-ws"
 }
 
 variable "dc_subnet_cidr" {
