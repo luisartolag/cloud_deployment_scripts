@@ -194,6 +194,11 @@ variable "win_gfx_disk_image_family" {
   default     = "windows-2016"
 }
 
+variable "win_gfx_instance_base_name" {
+  description = "Base name for all instance of this type"
+  default     = "windows"
+}
+
 variable "win_gfx_accelerator_type" {
   description = "Accelerator type for Windows Graphics Workstations"
   default     = "nvidia-tesla-p4-vws"

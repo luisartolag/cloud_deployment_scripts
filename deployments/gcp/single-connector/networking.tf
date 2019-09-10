@@ -235,13 +235,13 @@ resource "google_compute_firewall" "ws-allow-internal" {
 }
 
 resource "google_compute_network_peering" "teradici-workstations" {
-  name = "${local.prefix}${var.vpc_name}-${local.prefix}workstations"
+  name = "${local.prefix}${var.vpc_name}-${var.gcp_project_id}-${local.prefix}workstations"
   network = "${google_compute_network.vpc.self_link}"
   peer_network = "${google_compute_network.workstations.self_link}"
 }
 
 resource "google_compute_network_peering" "workstations-teradici" {
-  name = "${local.prefix}workstations-${local.prefix}${var.vpc_name}"
+  name = "${local.prefix}workstations-${var.gcp_project_id}-${local.prefix}${var.vpc_name}"
   network = "${google_compute_network.workstations.self_link}"
   peer_network = "${google_compute_network.vpc.self_link}"
 }

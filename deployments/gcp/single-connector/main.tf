@@ -104,6 +104,7 @@ module "win-gfx" {
   disk_size_gb      = var.win_gfx_disk_size_gb
   disk_image_project = var.win_gfx_disk_image_project
   disk_image_family = var.win_gfx_disk_image_family
+  name  = var.win_gfx_instance_base_name
 
   depends_on_hack = [google_compute_router_nat.nat.id]
 }
