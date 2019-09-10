@@ -36,6 +36,28 @@ resource "google_dns_managed_zone" "private_zone" {
   }
 }
 
+resource "google_dns_managed_zone" "private_zone_workstations" {
+  provider    = "google-beta"
+
+  name        = replace("${local.prefix}${var.domain_name}-zone-workstations", ".", "-")
+  dns_name    = "${var.domain_name}."
+  description = "Private peering zone for ${var.domain_name} workstations"
+
+  visibility  = "private"
+
+  private_visibility_config {
+    networks {
+      network_url = google_compute_network.workstations.self_link
+    }
+  }
+
+  peering_config {
+    target_network {
+      network_url = google_compute_network.vpc.self_link
+    }
+  }
+}
+
 resource "google_compute_firewall" "allow-internal" {
   name    = "${local.prefix}fw-allow-internal"
   network = google_compute_network.vpc.self_link
@@ -191,6 +213,37 @@ resource "google_compute_subnetwork" "ws-subnet" {
   name          = "${local.prefix}workstations"
   ip_cidr_range = var.ws_subnet_cidr
   network       = google_compute_network.workstations.self_link
+}
+
+resource "google_compute_firewall" "ws-allow-internal" {
+  name    = "${local.prefix}workstations-allow-internal"
+  network = google_compute_network.workstations.self_link
+
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["1-65535"]
+  }
+  allow {
+    protocol = "udp"
+    ports    = ["1-65535"]
+  }
+
+  source_ranges = [var.dc_subnet_cidr, var.cac_subnet_cidr, var.ws_subnet_cidr]
+}
+
+resource "google_compute_network_peering" "teradici-workstations" {
+  name = "${local.prefix}${var.vpc_name}-${local.prefix}workstations"
+  network = "${google_compute_network.vpc.self_link}"
+  peer_network = "${google_compute_network.workstations.self_link}"
+}
+
+resource "google_compute_network_peering" "workstations-teradici" {
+  name = "${local.prefix}workstations-${local.prefix}${var.vpc_name}"
+  network = "${google_compute_network.workstations.self_link}"
+  peer_network = "${google_compute_network.vpc.self_link}"
 }
 
 resource "google_compute_address" "dc-internal-ip" {
