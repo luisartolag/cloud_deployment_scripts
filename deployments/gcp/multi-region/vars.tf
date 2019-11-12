@@ -42,6 +42,11 @@ variable "allowed_cidr" {
   default     = []
 }
 
+variable "teradici_network" {
+  description = "Name of the VPC containing Teradici components"
+  default     = "vpc-cas"
+}
+
 variable "dc_subnet_cidr" {
   description = "CIDR for subnet containing the Domain Controller"
   default     = "10.0.0.0/24"
@@ -54,12 +59,17 @@ variable "dc_private_ip" {
 
 variable "dc_machine_type" {
   description = "Machine type for Domain Controller"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "dc_disk_size_gb" {
   description = "Disk size (GB) of Domain Controller"
   default     = 50
+}
+
+variable "dc_disk_image" {
+  description = "Disk image for the Domain Controller"
+  default     = "projects/windows-cloud/global/images/windows-server-2016-dc-v20190620"
 }
 
 variable "dc_admin_password" {
@@ -93,30 +103,25 @@ variable "domain_users_list" {
   default     = ""
 }
 
-# Hard-coded to accept list of 3. These regions are chosen based on support for
-# Nvidia P4 GPU.
-variable "cac_regions" {
+variable "cac_region_list" {
   description = "Regions in which to deploy Connectors"
-  default     = ["us-west2", "europe-west4", "asia-southeast1"]
-  # LA, Netherlands, Singapore
+  type        = list(string)
 }
 
 # Hard-coded to accept list of 3.
-variable "cac_zones" {
+variable "cac_zone_list" {
   description = "Zones in which to deploy Connectors"
-  default     = ["us-west2-b", "europe-west4-b", "asia-southeast1-b"]
+  type        = list(string)
 }
 
-# Hard-coded to accept list of 3.
-variable "cac_subnet_cidrs" {
+variable "cac_subnet_cidr_list" {
   description = "CIDRs for subnet containing the Cloud Access Connector"
-  default     = ["10.0.1.0/24", "10.1.1.0/24", "10.2.1.0/24"]
+  type        = list(string)
 }
 
-# Hard-coded to accept list of 3.
-variable "cac_instances" {
+variable "cac_instance_count_list" {
   description = "Number of Cloud Access Connector instances to deploy in each region"
-  default     = [1, 1, 1]
+  type        = list(number)
 }
 
 variable "cac_machine_type" {
@@ -124,19 +129,14 @@ variable "cac_machine_type" {
   default     = "n1-standard-2"
 }
 
-variable "cac_disk_image_project" {
-  description = "Disk image project for Cloud Access Connector"
-  default     = "ubuntu-os-cloud"
-}
-
-variable "cac_disk_image_family" {
-  description = "Disk image family for Cloud Access Connector"
-  default     = "ubuntu-1804-lts"
-}
-
 variable "cac_disk_size_gb" {
   description = "Disk size (GB) of Cloud Access Connector"
   default     = 50
+}
+
+variable "cac_disk_image" {
+  description = "Disk image for the Cloud Access Connector"
+  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-1804-lts"
 }
 
 # TODO: does this have to match the tag at the end of the SSH pub key?
@@ -202,7 +202,7 @@ variable "win_gfx_instance_count" {
 
 variable "win_gfx_machine_type" {
   description = "Machine type for Windows Graphics Workstations"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "win_gfx_accelerator_type" {
@@ -218,6 +218,11 @@ variable "win_gfx_accelerator_count" {
 variable "win_gfx_disk_size_gb" {
   description = "Disk size (GB) of Windows Graphics Workstations"
   default     = 50
+}
+
+variable "win_gfx_disk_image" {
+  description = "Disk image for the Windows Graphics Workstation"
+  default     = "projects/windows-cloud/global/images/windows-server-2016-dc-v20190620"
 }
 
 variable "centos_gfx_instance_count" {
@@ -245,6 +250,11 @@ variable "centos_gfx_disk_size_gb" {
   default     = 50
 }
 
+variable "centos_gfx_disk_image" {
+  description = "Disk image for the CentOS Graphics Workstation"
+  default     = "projects/centos-cloud/global/images/centos-7-v20190813"
+}
+
 variable "centos_std_instance_count" {
   description = "Number of CentOS Standard Workstations"
   default     = 0
@@ -258,6 +268,11 @@ variable "centos_std_machine_type" {
 variable "centos_std_disk_size_gb" {
   description = "Disk size (GB) of CentOS Standard Workstations"
   default     = 50
+}
+
+variable "centos_std_disk_image" {
+  description = "Disk image for the CentOS Standard Workstation"
+  default     = "projects/centos-cloud/global/images/centos-7-v20190813"
 }
 
 variable "centos_admin_user" {

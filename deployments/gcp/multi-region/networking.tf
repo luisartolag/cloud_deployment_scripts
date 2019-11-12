@@ -10,7 +10,7 @@ data "http" "myip" {
 }
 
 resource "google_compute_network" "vpc" {
-  name                    = "${local.prefix}vpc-dc"
+  name                    = "${local.prefix}${var.teradici_network}"
   auto_create_subnetworks = "false"
 }
 
@@ -52,7 +52,7 @@ resource "google_compute_firewall" "allow-internal" {
     ports    = ["1-65535"]
   }
 
-  source_ranges = concat([var.dc_subnet_cidr, var.ws_subnet_cidr], var.cac_subnet_cidrs)
+  source_ranges = concat([var.dc_subnet_cidr, var.ws_subnet_cidr], var.cac_subnet_cidr_list)
 }
 
 resource "google_compute_firewall" "allow-ssh" {
@@ -64,7 +64,7 @@ resource "google_compute_firewall" "allow-ssh" {
     ports    = ["22"]
   }
 
-  target_tags   = ["${local.prefix}tag-ssh"]
+  target_tags   = ["${local.prefix}fw-allow-ssh"]
   source_ranges = concat([chomp(data.http.myip.body)], var.allowed_cidr)
 }
 
@@ -77,7 +77,7 @@ resource "google_compute_firewall" "allow-http" {
     ports    = ["80"]
   }
 
-  target_tags   = ["${local.prefix}tag-http"]
+  target_tags   = ["${local.prefix}fw-allow-http"]
   source_ranges = ["0.0.0.0/0"]
 }
 
@@ -90,7 +90,7 @@ resource "google_compute_firewall" "allow-https" {
     ports    = ["443"]
   }
 
-  target_tags   = ["${local.prefix}tag-https"]
+  target_tags   = ["${local.prefix}fw-allow-https"]
   source_ranges = ["0.0.0.0/0"]
 }
 
@@ -107,7 +107,7 @@ resource "google_compute_firewall" "allow-rdp" {
     ports    = ["3389"]
   }
 
-  target_tags   = ["${local.prefix}tag-rdp"]
+  target_tags   = ["${local.prefix}fw-allow-rdp"]
   source_ranges = concat([chomp(data.http.myip.body)], var.allowed_cidr)
 }
 
@@ -120,7 +120,7 @@ resource "google_compute_firewall" "allow-winrm" {
     ports    = ["5985-5986"]
   }
 
-  target_tags   = ["${local.prefix}tag-winrm"]
+  target_tags   = ["${local.prefix}fw-allow-winrm"]
   source_ranges = concat([chomp(data.http.myip.body)], var.allowed_cidr)
 }
 
@@ -132,7 +132,7 @@ resource "google_compute_firewall" "allow-icmp" {
     protocol = "icmp"
   }
 
-  target_tags   = ["${local.prefix}tag-icmp"]
+  target_tags   = ["${local.prefix}fw-allow-icmp"]
   source_ranges = concat([chomp(data.http.myip.body)], var.allowed_cidr)
 }
 
@@ -149,7 +149,7 @@ resource "google_compute_firewall" "allow-pcoip" {
     ports    = ["4172"]
   }
 
-  target_tags   = ["${local.prefix}tag-pcoip"]
+  target_tags   = ["${local.prefix}fw-allow-pcoip"]
   source_ranges = ["0.0.0.0/0"]
 }
 
@@ -166,7 +166,7 @@ resource "google_compute_firewall" "allow-dns" {
     ports    = ["53"]
   }
 
-  target_tags   = ["${local.prefix}tag-dns"]
+  target_tags   = ["${local.prefix}fw-allow-dns"]
   source_ranges = ["35.199.192.0/19"]
 }
 
@@ -177,11 +177,11 @@ resource "google_compute_subnetwork" "dc-subnet" {
 }
 
 resource "google_compute_subnetwork" "cac-subnets" {
-  count = length(var.cac_regions)
+  count = length(var.cac_region_list)
 
-  name          = "${local.prefix}subnet-cac-${var.cac_regions[count.index]}"
-  region        = var.cac_regions[count.index]
-  ip_cidr_range = var.cac_subnet_cidrs[count.index]
+  name          = "${local.prefix}subnet-cac-${var.cac_region_list[count.index]}"
+  region        = var.cac_region_list[count.index]
+  ip_cidr_range = var.cac_subnet_cidr_list[count.index]
   network       = google_compute_network.vpc.self_link
 }
 

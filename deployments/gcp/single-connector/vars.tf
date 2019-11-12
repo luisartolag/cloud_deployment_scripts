@@ -44,7 +44,7 @@ variable "allowed_cidr" {
 
 variable "teradici_network" {
   description = "Name of the VPC containing Teradici components"
-  default     = "vpc-dc"
+  default     = "vpc-cas"
 }
 
 variable "workstations_network" {
@@ -64,12 +64,17 @@ variable "dc_private_ip" {
 
 variable "dc_machine_type" {
   description = "Machine type for Domain Controller"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "dc_disk_size_gb" {
   description = "Disk size (GB) of Domain Controller"
   default     = 50
+}
+
+variable "dc_disk_image" {
+  description = "Disk image for the Domain Controller"
+  default     = "projects/windows-cloud/global/images/windows-server-2016-dc-v20190620"
 }
 
 variable "dc_admin_password" {
@@ -92,19 +97,14 @@ variable "cac_machine_type" {
   default     = "n1-standard-2"
 }
 
-variable "cac_disk_image_project" {
-  description = "Disk image project for Cloud Access Connector"
-  default     = "ubuntu-os-cloud"
-}
-
-variable "cac_disk_image_family" {
-  description = "Disk image family for Cloud Access Connector"
-  default     = "ubuntu-1804-lts"
-}
-
 variable "cac_disk_size_gb" {
   description = "Disk size (GB) of Cloud Access Connector"
   default     = 50
+}
+
+variable "cac_disk_image" {
+  description = "Disk image for the Cloud Access Connector"
+  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-1804-lts"
 }
 
 # TODO: does this have to match the tag at the end of the SSH pub key?
@@ -186,7 +186,7 @@ variable "win_gfx_instance_count" {
 
 variable "win_gfx_machine_type" {
   description = "Machine type for Windows Graphics Workstations"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "win_gfx_disk_image_project" {
@@ -219,6 +219,11 @@ variable "win_gfx_disk_size_gb" {
   default     = 50
 }
 
+variable "win_gfx_disk_image" {
+  description = "Disk image for the Windows Graphics Workstation"
+  default     = "projects/windows-cloud/global/images/windows-server-2016-dc-v20190620"
+}
+
 variable "centos_gfx_instance_count" {
   description = "Number of CentOS Grpahics Workstations"
   default     = 0
@@ -244,6 +249,11 @@ variable "centos_gfx_disk_size_gb" {
   default     = 50
 }
 
+variable "centos_gfx_disk_image" {
+  description = "Disk image for the CentOS Graphics Workstation"
+  default     = "projects/centos-cloud/global/images/centos-7-v20190813"
+}
+
 variable "centos_std_instance_count" {
   description = "Number of CentOS Standard Workstations"
   default     = 0
@@ -257,6 +267,11 @@ variable "centos_std_machine_type" {
 variable "centos_std_disk_size_gb" {
   description = "Disk size (GB) of CentOS Standard Workstations"
   default     = 50
+}
+
+variable "centos_std_disk_image" {
+  description = "Disk image for the CentOS Standard Workstation"
+  default     = "projects/centos-cloud/global/images/centos-7-v20190813"
 }
 
 variable "centos_admin_user" {

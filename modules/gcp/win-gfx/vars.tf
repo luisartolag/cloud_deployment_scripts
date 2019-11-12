@@ -56,8 +56,13 @@ variable "subnet" {
 }
 
 variable "enable_public_ip" {
-  description = "Assign a public IP to the workstation"
+  description = "Assign a public IP to the Workstation"
   default     = false
+}
+
+variable "network_tags" {
+  description = "Tags to be applied to the Workstation"
+  type        = list(string)
 }
 
 variable "instance_count" {
@@ -67,7 +72,7 @@ variable "instance_count" {
 
 variable "machine_type" {
   description = "Machine type for Workstation"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "accelerator_type" {
@@ -80,9 +85,9 @@ variable "accelerator_count" {
   default     = "1"
 }
 
-variable "disk_image_project" {
-  description = "Disk image project for the Workstation"
-  default     = "windows-cloud"
+variable "disk_size_gb" {
+  description = "Disk size (GB) of the Workstation"
+  default     = "50"
 }
 
 variable "disk_image_family" {
@@ -91,13 +96,8 @@ variable "disk_image_family" {
 }
 
 variable "disk_image" {
-  description = "Disk image to use for the Workstation"
-  default     = "windows-server-2016-dc-v20190620"
-}
-
-variable "disk_size_gb" {
-  description = "Disk size (GB) of the Workstation"
-  default     = "100"
+  description = "Disk image for the Workstation"
+  default     = "projects/windows-cloud/global/images/family/windows-2016"
 }
 
 variable "admin_password" {

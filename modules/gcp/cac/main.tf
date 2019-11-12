@@ -72,7 +72,7 @@ resource "google_compute_instance" "cac" {
 
   boot_disk {
     initialize_params {
-      image = "projects/${var.disk_image_project}/global/images/family/${var.disk_image_family}"
+      image = var.disk_image
       type  = "pd-ssd"
       size  = var.disk_size_gb
     }
@@ -84,13 +84,7 @@ resource "google_compute_instance" "cac" {
     }
   }
 
-  tags = [
-    "${local.prefix}tag-ssh",
-    "${local.prefix}tag-icmp",
-    "${local.prefix}tag-http",
-    "${local.prefix}tag-https",
-    "${local.prefix}tag-pcoip",
-  ]
+  tags = var.network_tags
 
   metadata = {
     ssh-keys = "${var.cac_admin_user}:${file(var.cac_admin_ssh_pub_key_file)}"

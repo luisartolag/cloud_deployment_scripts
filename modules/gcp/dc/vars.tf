@@ -66,24 +66,24 @@ variable "private_ip" {
   default     = ""
 }
 
+variable "network_tags" {
+  description = "Tags to be applied to the Workstation"
+  type        = list(string)
+}
+
 variable "machine_type" {
   description = "Machine type for the Domain Controller"
-  default     = "n1-standard-2"
-}
-
-variable "disk_image_project" {
-  description = "Disk image project for the Domain Controller"
-  default     = "windows-cloud"
-}
-
-variable "disk_image" {
-  description = "Disk image to use for the Workstation"
-  default     = "windows-server-2016-dc-v20190620"
+  default     = "n1-standard-4"
 }
 
 variable "disk_size_gb" {
   description = "Disk size (GB) of the Domain Controller"
   default     = "50"
+}
+
+variable "disk_image" {
+  description = "Disk image for the Domain Controller"
+  default     = "projects/windows-cloud/global/images/family/windows-2016"
 }
 
 variable "kms_cryptokey_id" {

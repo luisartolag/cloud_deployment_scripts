@@ -43,11 +43,11 @@ The deployment will be created in **us-west2-b** and have the following specs:
 
 VM | vCPUs | Memory (GB) | SSD (GB) | GPU 
 ---|---|---|---|--- 
-DC | 2 | 7.5 | 50 | 0 
+DC | 4 | 15 | 50 | 0
 CAC | 2 | 7.5 | 50 | 0 
 scent | 2 | 7.5 | 50 | 0 
 gcent | 2 | 7.5 | 50 | 1
-gwin | 2 | 7.5 | 100 | 1
+gwin | 4 | 15 | 50 | 1
 
 You can check your quota [here](https://console.cloud.google.com/iam-admin/quotas).
 
@@ -88,10 +88,18 @@ The script should take approximately 25 minutes to run.
 1. Log in to [https://cam.teradici.com/beta-ui](https://cam.teradici.com/beta-ui)
 2. Click on **Remote Workstations** in the left panel, select **Create Remote workstation** from the **+** button
 3. Select connector **`sample_connector_<timestamp>`**
-4. Select workstation template and machine name
-5. Select **us-west2-b** for Zone, **subnet-ws** for Network, then select the machine type
-6. Enter **example.com** for Domain name, **cam_admin** for Domain service account, and the password you entered at the beginning of this script for service account password.
-7. Click **Create**
+4. Fill in the form according to you preferences. Note that the following
+   values must be used for their respective fields:
+```
+Region:                   "us-west2"
+Zone:                     "us-west2-b"
+Network:                  "vpc-cas"
+Subnetowrk:               "subnet-ws"
+Domain name:              "example.com"
+Domain service account:   "cam_admin"
+Service account password: <set by you at start of script>
+```
+5. Click **Create**
 
 ### Clean up
   1. Using GCP console, delete all workstations created by Cloud Access Manager

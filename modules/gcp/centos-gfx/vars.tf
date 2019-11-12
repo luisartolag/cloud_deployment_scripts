@@ -65,6 +65,11 @@ variable "enable_public_ip" {
   default     = false
 }
 
+variable "network_tags" {
+  description = "Tags to be applied to the Workstation"
+  type        = list(string)
+}
+
 variable "instance_count" {
   description = "Number of CentOS Graphics Workstations to deploy"
   default     = 1
@@ -85,23 +90,14 @@ variable "accelerator_count" {
   default     = "1"
 }
 
-variable "disk_image_project" {
-  description = "Disk image project for the Workstation"
-  default     = "centos-cloud"
-}
-
-#variable "disk_image_family" {
-#  description = "Disk image family for the Workstation"
-#  default = "centos-7"
-#}
-variable "disk_image" {
-  description = "Disk image to use for the Workstation"
-  default     = "centos-7-v20190813"
-}
-
 variable "disk_size_gb" {
   description = "Disk size (GB) of the Workstation"
   default     = "50"
+}
+
+variable "disk_image" {
+  description = "Disk image for the Workstation"
+  default     = "projects/centos-cloud/global/images/family/centos-7"
 }
 
 variable "ws_admin_user" {

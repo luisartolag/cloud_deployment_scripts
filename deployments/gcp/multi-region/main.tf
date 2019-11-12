@@ -35,16 +35,24 @@ module "dc" {
   service_account_password = var.service_account_password
   domain_users_list        = var.domain_users_list
 
-  bucket_name = google_storage_bucket.scripts.name
-  gcp_zone    = var.gcp_zone
-  subnet      = google_compute_subnetwork.dc-subnet.self_link
-  private_ip  = var.dc_private_ip
+  bucket_name  = google_storage_bucket.scripts.name
+  gcp_zone     = var.gcp_zone
+  subnet       = google_compute_subnetwork.dc-subnet.self_link
+  private_ip   = var.dc_private_ip
+  network_tags = [
+    "${google_compute_firewall.allow-dns.name}",
+    "${google_compute_firewall.allow-rdp.name}",
+    "${google_compute_firewall.allow-winrm.name}",
+    "${google_compute_firewall.allow-icmp.name}",
+  ]
 
-  machine_type       = var.dc_machine_type
-  disk_size_gb       = var.dc_disk_size_gb
+  machine_type = var.dc_machine_type
+  disk_size_gb = var.dc_disk_size_gb
+
+  disk_image = var.dc_disk_image
 }
 
-module "cac-igm-0" {
+module "cac-igm" {
   source = "../../../modules/gcp/cac-igm"
 
   prefix = var.prefix
@@ -60,78 +68,23 @@ module "cac-igm-0" {
   service_account_username = var.service_account_username
   service_account_password = var.service_account_password
 
-  #gcp_region = "${var.gcp_region}"
+  #gcp_region   = "${var.gcp_region}"
   bucket_name   = google_storage_bucket.scripts.name
-  gcp_zone      = var.cac_zones[0]
-  subnet        = google_compute_subnetwork.cac-subnets[0].self_link
-  cac_instances = var.cac_instances[0]
+  gcp_zone_list = var.cac_zone_list
+  subnet_list   = google_compute_subnetwork.cac-subnets[*].self_link
+  network_tags  = [
+    "${google_compute_firewall.allow-ssh.name}",
+    "${google_compute_firewall.allow-icmp.name}",
+    "${google_compute_firewall.allow-http.name}",
+    "${google_compute_firewall.allow-https.name}",
+    "${google_compute_firewall.allow-pcoip.name}",
+  ]
 
-  machine_type       = var.cac_machine_type
-  disk_image_project = var.cac_disk_image_project
-  disk_image_family  = var.cac_disk_image_family
-  disk_size_gb       = var.cac_disk_size_gb
+  instance_count_list = var.cac_instance_count_list
+  machine_type        = var.cac_machine_type
+  disk_size_gb        = var.cac_disk_size_gb
 
-  cac_admin_user             = var.cac_admin_user
-  cac_admin_ssh_pub_key_file = var.cac_admin_ssh_pub_key_file
-}
-
-module "cac-igm-1" {
-  source = "../../../modules/gcp/cac-igm"
-
-  prefix = var.prefix
-
-  gcp_service_account     = var.gcp_service_account
-  kms_cryptokey_id        = var.kms_cryptokey_id
-  cam_url                 = var.cam_url
-  pcoip_registration_code = var.pcoip_registration_code
-  cac_token               = var.cac_token
-
-  domain_name              = var.domain_name
-  domain_controller_ip     = module.dc.internal-ip
-  service_account_username = var.service_account_username
-  service_account_password = var.service_account_password
-
-  #gcp_region = "${var.gcp_region}"
-  bucket_name   = google_storage_bucket.scripts.name
-  gcp_zone      = var.cac_zones[1]
-  subnet        = google_compute_subnetwork.cac-subnets[1].self_link
-  cac_instances = var.cac_instances[1]
-
-  machine_type       = var.cac_machine_type
-  disk_image_project = var.cac_disk_image_project
-  disk_image_family  = var.cac_disk_image_family
-  disk_size_gb       = var.cac_disk_size_gb
-
-  cac_admin_user             = var.cac_admin_user
-  cac_admin_ssh_pub_key_file = var.cac_admin_ssh_pub_key_file
-}
-
-module "cac-igm-2" {
-  source = "../../../modules/gcp/cac-igm"
-
-  prefix = var.prefix
-
-  gcp_service_account     = var.gcp_service_account
-  kms_cryptokey_id        = var.kms_cryptokey_id
-  cam_url                 = var.cam_url
-  pcoip_registration_code = var.pcoip_registration_code
-  cac_token               = var.cac_token
-
-  domain_name              = var.domain_name
-  domain_controller_ip     = module.dc.internal-ip
-  service_account_username = var.service_account_username
-  service_account_password = var.service_account_password
-
-  #gcp_region = "${var.gcp_region}"
-  bucket_name   = google_storage_bucket.scripts.name
-  gcp_zone      = var.cac_zones[2]
-  subnet        = google_compute_subnetwork.cac-subnets[2].self_link
-  cac_instances = var.cac_instances[2]
-
-  machine_type       = var.cac_machine_type
-  disk_image_project = var.cac_disk_image_project
-  disk_image_family  = var.cac_disk_image_family
-  disk_size_gb       = var.cac_disk_size_gb
+  disk_image = var.cac_disk_image
 
   cac_admin_user             = var.cac_admin_user
   cac_admin_ssh_pub_key_file = var.cac_admin_ssh_pub_key_file
@@ -152,25 +105,16 @@ resource "google_compute_backend_service" "cac-bkend-service" {
   session_affinity        = "GENERATED_COOKIE"
   affinity_cookie_ttl_sec = 3600
 
-  backend {
-    balancing_mode = "UTILIZATION"
+  dynamic backend {
+    for_each = module.cac-igm.cac-igm
+    iterator = i
 
-    # Wants instanceGroup instead of instanceGroupManager
-    group = replace(module.cac-igm-0.cac-igm, "Manager", "")
-  }
+    content {
+      balancing_mode = "UTILIZATION"
 
-  backend {
-    balancing_mode = "UTILIZATION"
-
-    # Wants instanceGroup instead of instanceGroupManager
-    group = replace(module.cac-igm-1.cac-igm, "Manager", "")
-  }
-
-  backend {
-    balancing_mode = "UTILIZATION"
-
-    # Wants instanceGroup instead of instanceGroupManager
-    group = replace(module.cac-igm-2.cac-igm, "Manager", "")
+      # Wants instanceGroup instead of instanceGroupManager
+      group = replace(i.value, "Manager", "")
+    }
   }
 
   health_checks = [google_compute_https_health_check.cac-hchk.self_link]
@@ -220,12 +164,18 @@ module "win-gfx" {
   gcp_zone         = var.gcp_zone
   subnet           = google_compute_subnetwork.ws-subnet.self_link
   enable_public_ip = var.enable_workstation_public_ip
-  instance_count   = var.win_gfx_instance_count
+  network_tags     = [
+    "${google_compute_firewall.allow-icmp.name}",
+    "${google_compute_firewall.allow-rdp.name}",
+  ]
 
+  instance_count    = var.win_gfx_instance_count
   machine_type      = var.win_gfx_machine_type
   accelerator_type  = var.win_gfx_accelerator_type
   accelerator_count = var.win_gfx_accelerator_count
   disk_size_gb      = var.win_gfx_disk_size_gb
+
+  disk_image = var.win_gfx_disk_image
 
   depends_on_hack = [google_compute_router_nat.nat.id]
 }
@@ -249,12 +199,18 @@ module "centos-gfx" {
   gcp_zone         = var.gcp_zone
   subnet           = google_compute_subnetwork.ws-subnet.self_link
   enable_public_ip = var.enable_workstation_public_ip
-  instance_count   = var.centos_gfx_instance_count
+  network_tags     = [
+    "${google_compute_firewall.allow-icmp.name}",
+    "${google_compute_firewall.allow-ssh.name}",
+  ]
 
+  instance_count    = var.centos_gfx_instance_count
   machine_type      = var.centos_gfx_machine_type
   accelerator_type  = var.centos_gfx_accelerator_type
   accelerator_count = var.centos_gfx_accelerator_count
   disk_size_gb      = var.centos_gfx_disk_size_gb
+
+  disk_image = var.centos_gfx_disk_image
 
   ws_admin_user              = var.centos_admin_user
   ws_admin_ssh_pub_key_file  = var.centos_admin_ssh_pub_key_file
@@ -281,10 +237,16 @@ module "centos-std" {
   gcp_zone         = var.gcp_zone
   subnet           = google_compute_subnetwork.ws-subnet.self_link
   enable_public_ip = var.enable_workstation_public_ip
-  instance_count   = var.centos_std_instance_count
+  network_tags     = [
+    "${google_compute_firewall.allow-icmp.name}",
+    "${google_compute_firewall.allow-ssh.name}",
+  ]
 
-  machine_type = var.centos_std_machine_type
-  disk_size_gb = var.centos_std_disk_size_gb
+  instance_count = var.centos_std_instance_count
+  machine_type   = var.centos_std_machine_type
+  disk_size_gb   = var.centos_std_disk_size_gb
+
+  disk_image = var.centos_std_disk_image
 
   ws_admin_user              = var.centos_admin_user
   ws_admin_ssh_pub_key_file  = var.centos_admin_ssh_pub_key_file

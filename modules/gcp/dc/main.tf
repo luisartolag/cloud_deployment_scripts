@@ -77,7 +77,7 @@ resource "google_compute_instance" "dc" {
 
   boot_disk {
     initialize_params {
-      image = "projects/${var.disk_image_project}/global/images/${var.disk_image}"
+      image = var.disk_image
       type  = "pd-ssd"
       size  = var.disk_size_gb
     }
@@ -90,12 +90,7 @@ resource "google_compute_instance" "dc" {
     }
   }
 
-  tags = [
-    "${local.prefix}tag-dns",
-    "${local.prefix}tag-rdp",
-    "${local.prefix}tag-winrm",
-    "${local.prefix}tag-icmp",
-  ]
+  tags = var.network_tags
 
   metadata = {
     sysprep-specialize-script-url = "gs://${var.bucket_name}/${google_storage_bucket_object.sysprep-script.output_name}"

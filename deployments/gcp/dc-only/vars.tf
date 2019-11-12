@@ -42,6 +42,11 @@ variable "allowed_cidr" {
   default     = []
 }
 
+variable "teradici_network" {
+  description = "Name of the VPC containing Teradici components"
+  default     = "vpc-cas"
+}
+
 variable "dc_subnet_cidr" {
   description = "CIDR for subnet containing the Domain Controller"
   default     = "10.0.0.0/24"
@@ -54,12 +59,17 @@ variable "dc_private_ip" {
 
 variable "dc_machine_type" {
   description = "Machine type for Domain Controller"
-  default     = "n1-standard-2"
+  default     = "n1-standard-4"
 }
 
 variable "dc_disk_size_gb" {
   description = "Disk size (GB) of Domain Controller"
   default     = 50
+}
+
+variable "dc_disk_image" {
+  description = "Disk image for the Domain Controller"
+  default     = "projects/windows-cloud/global/images/windows-server-2016-dc-v20190620"
 }
 
 variable "dc_admin_password" {
